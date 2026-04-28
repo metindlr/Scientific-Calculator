@@ -8,6 +8,41 @@ const math = create(all, config);
 
 export type AngleMode = "deg" | "rad";
 
+const TRIG_FUNCS = ["sin", "cos", "tan"];
+
+function wrapTrigForDegrees(expr: string): string {
+  let out = "";
+  let i = 0;
+  while (i < expr.length) {
+    let matched = false;
+    for (const fn of TRIG_FUNCS) {
+      if (expr.startsWith(fn + "(", i)) {
+        const start = i + fn.length + 1;
+        let depth = 1;
+        let j = start;
+        while (j < expr.length && depth > 0) {
+          const ch = expr[j];
+          if (ch === "(") depth++;
+          else if (ch === ")") depth--;
+          if (depth === 0) break;
+          j++;
+        }
+        const arg = expr.slice(start, j);
+        const wrappedArg = wrapTrigForDegrees(arg);
+        out += `${fn}(((${wrappedArg}) * pi / 180))`;
+        i = j + 1;
+        matched = true;
+        break;
+      }
+    }
+    if (!matched) {
+      out += expr[i];
+      i++;
+    }
+  }
+  return out;
+}
+
 function preprocess(expr: string, angleMode: AngleMode): string {
   let processed = expr
     .replace(/×/g, "*")
@@ -17,34 +52,7 @@ function preprocess(expr: string, angleMode: AngleMode): string {
     .replace(/√/g, "sqrt");
 
   if (angleMode === "deg") {
-    processed = processed.replace(
-      /\b(sin|cos|tan)\(/g,
-      (_m, fn) => `${fn}((pi/180)*(`,
-    );
-    let depth = 0;
-    let result = "";
-    let inFnArg = 0;
-    const stack: number[] = [];
-    for (let i = 0; i < processed.length; i++) {
-      const ch = processed[i];
-      if (ch === "(") {
-        depth++;
-        if (inFnArg > 0) stack.push(depth);
-      }
-      if (ch === ")") {
-        if (stack.length && stack[stack.length - 1] === depth) {
-          stack.pop();
-          result += "))";
-          inFnArg--;
-          depth--;
-          continue;
-        }
-        depth--;
-      }
-      result += ch;
-    }
-    processed = result;
-
+    processed = wrapTrigForDegrees(processed);
     processed = processed.replace(
       /\b(asin|acos|atan)\(/g,
       (_m, fn) => `(180/pi)*${fn}(`,
