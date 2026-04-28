@@ -1,0 +1,8 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "NVomDgUBbyA5Fzn1E4VrX"
+uri = "file://artifacts/calculator/assets/images/icon.png"
+type = "image"
+title = "calculator app icon"
