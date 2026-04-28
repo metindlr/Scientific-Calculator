@@ -86,10 +86,23 @@ export type KeypadProps = {
   scientific: boolean;
   angleMode: "deg" | "rad";
   onAction: (action: KeypadAction) => void;
+  buttonFontSize: number;
+  sciButtonFontSize: number;
 };
 
-export function Keypad({ scientific, angleMode, onAction }: KeypadProps) {
-  const renderRow = (row: Key[], rowIdx: number, small = false) => (
+export function Keypad({
+  scientific,
+  angleMode,
+  onAction,
+  buttonFontSize,
+  sciButtonFontSize,
+}: KeypadProps) {
+  const renderRow = (
+    row: Key[],
+    rowIdx: number,
+    small: boolean,
+    fontSize: number,
+  ) => (
     <View key={rowIdx} style={styles.row}>
       {row.map((key) => {
         const label =
@@ -101,6 +114,7 @@ export function Keypad({ scientific, angleMode, onAction }: KeypadProps) {
             variant={key.variant}
             flex={key.flex ?? 1}
             small={small}
+            fontSize={fontSize}
             onPress={() => onAction(key.action)}
           />
         );
@@ -112,11 +126,15 @@ export function Keypad({ scientific, angleMode, onAction }: KeypadProps) {
     <View style={styles.container}>
       {scientific && (
         <View style={styles.sciSection}>
-          {scientificRows.map((row, idx) => renderRow(row, idx, true))}
+          {scientificRows.map((row, idx) =>
+            renderRow(row, idx, true, sciButtonFontSize),
+          )}
         </View>
       )}
       <View style={styles.basicSection}>
-        {basicRows.map((row, idx) => renderRow(row, idx + 100, false))}
+        {basicRows.map((row, idx) =>
+          renderRow(row, idx + 100, false, buttonFontSize),
+        )}
       </View>
     </View>
   );
@@ -124,15 +142,18 @@ export function Keypad({ scientific, angleMode, onAction }: KeypadProps) {
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     width: "100%",
-    paddingHorizontal: 8,
+    paddingHorizontal: 4,
   },
   sciSection: {
-    marginBottom: 6,
+    flex: 3,
   },
-  basicSection: {},
+  basicSection: {
+    flex: 5,
+  },
   row: {
+    flex: 1,
     flexDirection: "row",
-    marginVertical: 4,
   },
 });

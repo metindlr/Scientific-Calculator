@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Text,
   View,
+  useWindowDimensions,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -34,6 +35,7 @@ function makeId(): string {
 export default function CalculatorScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
+  const { width, height } = useWindowDimensions();
 
   const [expression, setExpression] = useState<string>("");
   const [angleMode, setAngleMode] = useState<"deg" | "rad">("deg");
@@ -193,6 +195,20 @@ export default function CalculatorScreen() {
   const bottomPad =
     Platform.OS === "web" ? Math.max(insets.bottom, 34) : insets.bottom;
 
+  // Adaptive sizing based on screen dimensions to support all Android devices
+  // (small phones ~320pt to large phones / foldables ~480pt+).
+  const shortest = Math.min(width, height);
+  const sizeScale = Math.max(0.8, Math.min(1.25, shortest / 390));
+
+  const expressionFontSize = Math.round(
+    Math.max(34, Math.min(64, width * 0.13)),
+  );
+  const resultFontSize = Math.round(expressionFontSize * 0.42);
+  const buttonFontSize = Math.round(20 * sizeScale);
+  const sciButtonFontSize = Math.round(15 * sizeScale);
+  const headerIconSize = Math.round(38 * sizeScale);
+  const isSmall = width < 360;
+
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { paddingTop: topPad + 4 }]}>
@@ -204,11 +220,21 @@ export default function CalculatorScreen() {
           }}
           style={({ pressed }) => [
             styles.iconBtn,
-            { backgroundColor: colors.muted, opacity: pressed ? 0.6 : 1 },
+            {
+              backgroundColor: colors.muted,
+              opacity: pressed ? 0.6 : 1,
+              width: headerIconSize,
+              height: headerIconSize,
+              borderRadius: headerIconSize / 2,
+            },
           ]}
           hitSlop={8}
         >
-          <Feather name="clock" size={20} color={colors.foreground} />
+          <Feather
+            name="clock"
+            size={Math.round(headerIconSize * 0.5)}
+            color={colors.foreground}
+          />
         </Pressable>
 
         <Pressable
@@ -222,12 +248,14 @@ export default function CalculatorScreen() {
             {
               backgroundColor: scientific ? colors.primary : colors.muted,
               opacity: pressed ? 0.7 : 1,
+              paddingVertical: Math.round(8 * sizeScale),
+              paddingHorizontal: Math.round(14 * sizeScale),
             },
           ]}
         >
           <Feather
             name={scientific ? "sliders" : "grid"}
-            size={14}
+            size={Math.round(14 * sizeScale)}
             color={scientific ? colors.primaryForeground : colors.foreground}
           />
           <Text
@@ -237,10 +265,11 @@ export default function CalculatorScreen() {
                 color: scientific
                   ? colors.primaryForeground
                   : colors.foreground,
+                fontSize: Math.round(13 * sizeScale),
               },
             ]}
           >
-            {scientific ? "Scientific" : "Basic"}
+            {isSmall ? (scientific ? "Sci" : "Basic") : scientific ? "Scientific" : "Basic"}
           </Text>
         </Pressable>
       </View>
@@ -250,14 +279,26 @@ export default function CalculatorScreen() {
           expression={expression}
           result={livePreview}
           angleMode={angleMode}
+          expressionFontSize={expressionFontSize}
+          resultFontSize={resultFontSize}
         />
       </View>
 
-      <View style={[styles.keypadWrap, { paddingBottom: bottomPad + 12 }]}>
+      <View
+        style={[
+          styles.keypadWrap,
+          {
+            paddingBottom: bottomPad + 8,
+            flex: scientific ? 1.2 : 0.85,
+          },
+        ]}
+      >
         <Keypad
           scientific={scientific}
           angleMode={angleMode}
           onAction={onAction}
+          buttonFontSize={buttonFontSize}
+          sciButtonFontSize={sciButtonFontSize}
         />
       </View>
 
@@ -280,13 +321,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingBottom: 8,
+    paddingHorizontal: 16,
+    paddingBottom: 4,
   },
   iconBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -294,19 +332,17 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
     borderRadius: 999,
   },
   modeText: {
-    fontSize: 13,
     fontFamily: "Inter_600SemiBold",
   },
   displayWrap: {
-    flex: 1,
+    flex: 0.5,
+    minHeight: 100,
     justifyContent: "flex-end",
   },
   keypadWrap: {
-    paddingTop: 6,
+    paddingTop: 4,
   },
 });

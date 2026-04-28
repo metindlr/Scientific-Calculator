@@ -8,9 +8,17 @@ export type DisplayProps = {
   expression: string;
   result: string;
   angleMode: "deg" | "rad";
+  expressionFontSize: number;
+  resultFontSize: number;
 };
 
-export function Display({ expression, result, angleMode }: DisplayProps) {
+export function Display({
+  expression,
+  result,
+  angleMode,
+  expressionFontSize,
+  resultFontSize,
+}: DisplayProps) {
   const colors = useColors();
   const shownExpression = expression ? formatDisplay(expression) : "0";
 
@@ -28,8 +36,17 @@ export function Display({ expression, result, angleMode }: DisplayProps) {
         style={styles.scroll}
       >
         <Text
-          style={[styles.expression, { color: colors.displayForeground }]}
+          style={[
+            styles.expression,
+            {
+              color: colors.displayForeground,
+              fontSize: expressionFontSize,
+              lineHeight: expressionFontSize * 1.15,
+            },
+          ]}
           numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.5}
         >
           {shownExpression}
         </Text>
@@ -41,8 +58,13 @@ export function Display({ expression, result, angleMode }: DisplayProps) {
           contentContainerStyle={styles.scrollContent}
         >
           <Text
-            style={[styles.result, { color: colors.mutedForeground }]}
+            style={[
+              styles.result,
+              { color: colors.mutedForeground, fontSize: resultFontSize },
+            ]}
             numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.6}
           >
             = {result}
           </Text>
@@ -54,10 +76,11 @@ export function Display({ expression, result, angleMode }: DisplayProps) {
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     width: "100%",
-    paddingHorizontal: 24,
-    paddingTop: 16,
-    paddingBottom: 24,
+    paddingHorizontal: 20,
+    paddingTop: 8,
+    paddingBottom: 12,
     alignItems: "flex-end",
     justifyContent: "flex-end",
   },
@@ -65,7 +88,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "flex-end",
     width: "100%",
-    marginBottom: 8,
+    marginBottom: 6,
   },
   modeBadge: {
     fontSize: 12,
@@ -74,6 +97,7 @@ const styles = StyleSheet.create({
   },
   scroll: {
     width: "100%",
+    flexGrow: 0,
   },
   scrollContent: {
     flexGrow: 1,
@@ -81,15 +105,12 @@ const styles = StyleSheet.create({
     minWidth: "100%",
   },
   expression: {
-    fontSize: 56,
     fontFamily: "Inter_500Medium",
     textAlign: "right",
-    lineHeight: 64,
   },
   result: {
-    fontSize: 24,
     fontFamily: "Inter_400Regular",
     textAlign: "right",
-    marginTop: 6,
+    marginTop: 4,
   },
 });

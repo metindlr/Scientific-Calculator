@@ -27,6 +27,7 @@ export type CalcButtonProps = {
   variant?: CalcButtonVariant;
   flex?: number;
   small?: boolean;
+  fontSize?: number;
   testID?: string;
 };
 
@@ -36,6 +37,7 @@ export function CalcButton({
   variant = "digit",
   flex = 1,
   small = false,
+  fontSize,
   testID,
 }: CalcButtonProps) {
   const colors = useColors();
@@ -63,26 +65,25 @@ export function CalcButton({
     onPress();
   };
 
-  const containerStyle = ({ pressed }: PressableStateCallbackType): StyleProp<ViewStyle> => [
+  const containerStyle = ({
+    pressed,
+  }: PressableStateCallbackType): StyleProp<ViewStyle> => [
     styles.button,
     {
       backgroundColor: palette.bg,
-      flex,
       opacity: pressed ? 0.65 : 1,
       transform: [{ scale: pressed ? 0.97 : 1 }],
-      height: small ? 56 : 68,
     },
   ];
+
+  const resolvedFontSize = fontSize ?? (small ? 16 : 24);
 
   const textStyle: StyleProp<TextStyle> = [
     styles.label,
     {
       color: palette.fg,
-      fontSize: small ? 18 : 26,
-      fontFamily:
-        variant === "function" || variant === "scientific"
-          ? "Inter_500Medium"
-          : "Inter_500Medium",
+      fontSize: resolvedFontSize,
+      fontFamily: "Inter_500Medium",
     },
   ];
 
@@ -104,13 +105,17 @@ export function CalcButton({
 
 const styles = StyleSheet.create({
   wrapper: {
+    flex: 1,
     paddingHorizontal: 4,
+    paddingVertical: 4,
   },
   button: {
+    flex: 1,
     borderRadius: 999,
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 4,
+    minHeight: 40,
   },
   label: {
     textAlign: "center",
